@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>时间轴</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../src/timeline.css">
+	<link rel="stylesheet" type="text/css" href="../src/timeline-slider.css">
+	<style type="text/css">
+	html {min-width:500px;}
+	body {font:12px/1.667 'Helvetica Neue',Tahoma;}
+	img {vertical-align:top;display:inline-block;}
+	#timelineID {margin:100px;height:45px;}
+	#timelineSlideID {margin-top:50px;height:460px;}
+
+	.tls-item img {max-width:100%;max-height:100%;}
+	.tls-item span {display:inline-block;}
+	</style>
+</head>
+<body>
+	<div id="timelineSlideID"></div>
+	<div id="timelineID"></div>
+	<input type="range" min="1" max="50" id="zoomI" value="38">
+	<button id="zoom">增加zoom</button>
+	<button id="zoom2">减小zoom</button>
+	<div>
+		<input type="text" id="focusDate" style="width:300px;">
+	</div>
+	<script type="text/javascript" src="../src/timeline.js"></script>
+	<script type="text/javascript" src="../src/timeline-slider.js"></script>
+	<script type="text/javascript">
+
+	var timelineData = {
+		focus_date: '2012-01-05 12:00',
+		events: [
+			{
+				id: "2011-05-05 12:00",
+				startDate: "2011-05-05 12:00",
+				endDate: "2011-05-05 12:00"
+			},
+			{
+				id: "2011-06-05 12:00",
+				startDate: "2011-06-05 12:00",
+				endDate: "2011-06-05 12:00"
+			},
+			{
+				id: "2011-07-05 12:00",
+				startDate: "2011-07-05 12:00",
+				endDate: "2011-07-05 12:00"
+			},
+			{
+				id: "2011-09-05 12:00",
+				startDate: "2011-09-05 12:00",
+				endDate: "2011-09-05 12:00"
+			},
+			{
+				id: "2011-11-05 12:00",
+				startDate: "2011-11-05 12:00",
+				endDate: "2011-11-05 12:00"
+			},
+			{
+				id: "2012-01-05 12:00",
+				startDate: "2012-01-05 12:00",
+				endDate: "2012-01-05 12:00"
+			},
+			{
+				id: "2012-03-05 12:00",
+				startDate: "2012-03-05 12:00",
+				endDate: "2012-03-05 12:00"
+			},
+			{
+				id: "2012-05-05 12:00",
+				startDate: "2012-05-05 12:00",
+				endDate: "2012-05-05 12:00"
+			},
+			{
+				id: "2012-07-05 12:00",
+				startDate: "2012-07-05 12:00",
+				endDate: "2012-07-05 12:00"
+			},
+			{
+				id: "2012-09-05 12:00",
+				startDate: "2012-09-05 12:00",
+				endDate: "2012-09-05 12:00"
+			},
+			{
+				id: "2012-12-05 12:00",
+				startDate: "2012-12-05 12:00",
+				endDate: "2012-12-05 12:00"
+			},
+			{
+				id: "2013-03-01 12:00",
+				startDate: "2013-03-01 12:00",
+				endDate: "2013-03-01 12:00"
+			},
+			{
+				id: "2013-07-01 12:00",
+				startDate: "2013-07-01 12:00",
+				endDate: "2013-07-01 12:00"
+			},
+			{
+				id: "2013-09-05 12:00",
+				startDate: "2013-09-05 12:00",
+				endDate: "2013-09-05 12:00"
+			},
+			{
+				id: "2013-11-05 12:00",
+				startDate: "2013-11-05 12:00",
+				endDate: "2013-11-05 12:00"
+			},
+			{
+				id: "2014-02-01 12:00",
+				startDate: "2014-02-01 12:00",
+				endDate: "2014-02-01 12:00"
+			},
+			{
+				id: "2014-05-05 12:00",
+				startDate: "2014-05-05 12:00",
+				endDate: "2014-05-05 12:00"
+			},
+			{
+				id: "2014-08-05 12:00",
+				startDate: "2014-08-05 12:00",
+				endDate: "2014-08-05 12:00"
+			},
+			{
+				id: "2014-09-05 12:00",
+				startDate: "2014-09-05 12:00",
+				endDate: "2014-09-05 12:00"
+			},
+			{
+				id: "2014-10-05 12:00",
+				startDate: "2014-10-05 12:00",
+				endDate: "2014-10-05 12:00"
+			},
+			{
+				id: "2014-10-07 19:00",
+				startDate: "2014-10-05 19:00",
+				endDate: "2014-10-05 19:00"
+			},
+			{
+				id: "2014-10-08 10:00",
+				startDate: "2014-10-08 10:00",
+				endDate: "2014-10-08 10:00"
+			},
+			{
+				id: "2014-10-08 12:00",
+				startDate: "2014-10-08 12:00",
+				endDate: "2014-10-08 12:00"
+			},
+			{
+				id: "2014-10-12 12:00",
+				startDate: "2014-10-12 12:00",
+				endDate: "2014-10-12 12:00"
+			},
+			{
+				id: "2014-10-16 12:00",
+				startDate: "2014-10-16 12:00",
+				endDate: "2014-10-16 12:00"
+			},
+			{
+				id: "2014-10-19 12:00",
+				startDate: "2014-10-19 12:00",
+				endDate: "2014-10-19 12:00"
+			},
+			{
+				id: "2014-10-23 12:00",
+				startDate: "2014-10-23 12:00",
+				endDate: "2014-10-23 12:00"
+			},
+			{
+				id: "2014-10-25 12:00",
+				startDate: "2014-10-25 12:00",
+				endDate: "2014-10-25 12:00"
+			},
+			{
+				id: "2014-10-30 12:00",
+				startDate: "2014-10-30 12:00",
+				endDate: "2014-10-30 12:00"
+			},
+			{
+				id: "2014-11-01 10:00",
+				startDate: "2014-11-01 10:00",
+				endDate: "2014-11-01 10:00"
+			},
+			{
+				id: "2014-11-03 18:00",
+				startDate: "2014-11-03 18:00",
+				endDate: "2014-11-03 18:00"
+			}
+		]
+	}
+	
+	var z = $('#zoomI');
+	var tl = new Timeline('#timelineID', timelineData, {
+		// reverseDate: true,
+		zoom: z.val()
+	});
+
+	var tls = new TimelineSlider('#timelineSlideID', tl, {
+
+		buildItemContent: function(evt, index) {
+			return '<img src="//s4.kuaipan.cn/i/4/135.png"><span>' + evt.id + '</span>';
+		}
+
+	});
+
+	$('#zoom').click(function() {
+		// 增加zoom
+		setV(tl.zoom + tl.zoomUnit);
+	});
+
+	$('#zoom2').click(function() {
+		// 减小zoom
+		setV(tl.zoom - tl.zoomUnit);
+	});
+
+	function setV(v) {
+		v = v > tl.options.maxZoom ? tl.options.maxZoom :
+				v < tl.options.minZoom ? tl.options.minZoom : v;
+		z.val(v);
+		tl.zoomTo(v);
+	}
+	
+	z.on('change', function() {
+		tl.zoomTo(z.val());
+	});
+
+	tl.on('zoomChange', function(e, zoom) {
+		z.val(zoom);
+	});
+	var focusDate = $('#focusDate');
+	tl.on('dateChange', function(e, date) {
+		focusDate.val(date.toLocaleString());
+	});
+	</script>
+</body>
+</html>
