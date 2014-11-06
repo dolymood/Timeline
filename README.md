@@ -4,6 +4,7 @@ Timeline
 ## 横向时间轴组件
 
 [DEMO](http://demo.aijc.net/js/Timeline/example/timeline.html)
+
 ### 基本配置使用：
 
 #### Timeline：
@@ -52,4 +53,10 @@ var tls = new TimelineSlider('#timelineSlideID', tl, {
 
 _IE7+（IE6未测试），其他浏览器_
 
-_协议：[MIT](https://github.com/dolymood/Timeline/blob/master/LICENSE)_
+编码风格：
+
+_用的tab，tab大小为2个空格_
+
+协议：
+
+_[MIT](https://github.com/dolymood/Timeline/blob/master/LICENSE)_
