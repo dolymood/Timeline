@@ -3,6 +3,7 @@ Timeline
 
 ## 横向时间轴组件
 
+[DEMO](http://demo.aijc.net/js/Timeline/example/timeline.html)
 ### 基本配置使用：
 
 #### Timeline：
