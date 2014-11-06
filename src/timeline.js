@@ -101,10 +101,10 @@
 		'DAY': 1
 	};
 
-	var ONEDAY = 24 * 60 * 60 * 1000;
-	var ONEMONTH = 30 * ONEDAY;
-	var ONEYEAR = 12 * ONEMONTH;
-	var ONEDE = 10 * ONEYEAR;
+	var ONEDAY = HOURDR * 60 * 60 * 1000;
+	var ONEMONTH = DAYDR * ONEDAY;
+	var ONEYEAR = MONTHDR * ONEMONTH;
+	var ONEDE = YEARDR * ONEYEAR;
 
 	var SPACE = '&nbsp;';
 
