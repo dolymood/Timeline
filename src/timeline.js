@@ -1112,19 +1112,13 @@
 			var curLevel = this.showLevel;
 			var zoomLevel = this.zoomLevel;
 			var zoom = this.zoom;
-			var map = {
-				'4': 'YEAR',
-				'3': 'MONTH',
-				'2': 'DAY',
-				'1': 'HOUR'
-			};
 			var n = .00000001;
 			var targetZoom, tmp;
 			if (delta > 0) {
 				// 缩小zoom
 				targetZoom = zoom - this.zoomUnit;
 				if (curLevel > 1) {
-					tmp = zoomTree[map[curLevel]];
+					tmp = zoomTree[DATELEVEL[curLevel]];
 					if (zoom >= tmp && targetZoom <= tmp) {
 						// 跨级了
 						if (zoomLevel > ZOOMLEVELNUM - 3) {
@@ -1138,7 +1132,7 @@
 			} else {
 				targetZoom = zoom + this.zoomUnit;
 				if (curLevel < 4) {
-					tmp = zoomTree[map[curLevel + 1]];
+					tmp = zoomTree[DATELEVEL[curLevel + 1]];
 					if (zoom <= tmp && targetZoom >= tmp) {
 						// 跨级了
 						if (zoomLevel < ZOOMLEVELNUM) {
