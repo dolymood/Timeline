@@ -426,4 +426,4 @@
 		}
 	}
 
-}(window, $));
+}(window, jQuery));

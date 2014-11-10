@@ -1440,4 +1440,4 @@
 		}
 	}
 
-}(window, $));
+}(window, jQuery));
