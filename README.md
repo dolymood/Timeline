@@ -26,7 +26,10 @@ var tl = new Timeline('#timelineID', timelineData, {
 	alwaysTrigger: false,
 
 	// 鼠标滚轮缩放
-	mouseZoom: true
+	mouseZoom: true,
+
+	// 检测resize
+	checkResize: false
 });
 ```
 
@@ -40,6 +43,9 @@ var tls = new TimelineSlider('#timelineSlideID', tl, {
 
 	// 是否显示所有events
 	showAllEvents: true,
+
+	// 检测resize
+	checkResize: false,
 
 	// 构建单个项内容
 	buildItemContent: function(evt, index) {
