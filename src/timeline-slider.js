@@ -6,12 +6,8 @@
  * Copyright (c) 2014 dolymood(aijc.net)
  */
 
-;(function(win, $, Timeline) {
+;(function(win, $) {
 	'use strict'
-
-	if (!Timeline || Timeline.id !== 'Timeline') {
-		throw new Error('Need right Timeline.');
-	}
 
 	var OPTIONS = {
 
@@ -20,6 +16,9 @@
 
 		// 是否显示所有events
 		showAllEvents: true,
+
+		// 检测resize
+		checkResize: false,
 
 		// 构建单个项内容
 		buildItemContent: function(evt, index) {
@@ -75,6 +74,8 @@
 			
 			this._body.append(this._cursor).append(this._itemsContainer);
 
+			// 先隐藏
+			this.hideContainer();
 			this._container.append(this._body)
 										 .append(this._nextNavBtn)
 										 .append(this._prevNavBtn);
@@ -92,6 +93,20 @@
 
 			// 已经初始化了
 			this.inited = true;
+		},
+
+		/**
+		 * 显示元素
+		 */
+		showContainer: function() {
+			this.ele.css('visibility', 'visible');
+		},
+
+		/**
+		 * 隐藏元素
+		 */
+		hideContainer: function() {
+			this.ele.css('visibility', 'hidden');
 		},
 
 		/**
@@ -240,7 +255,7 @@
 				that.moveTo(date, moving);
 			});
 
-			$(window).on('resize', $.proxy(this._onResize, this));
+			this.options.checkResize && $(window).on('resize', $.proxy(this._onResize, this));
 
 			this._container.delegate('.tls-nav-next', 'click', $.proxy(this._onNavNext, this));
 			this._container.delegate('.tls-nav-prev', 'click', $.proxy(this._onNavPrev, this));
@@ -284,28 +299,30 @@
 			var that = this;
 			var timeline = this.timeline;
 			var reverseDate = timeline.options.reverseDate;
-			if (navPreving) date = timeline.getNextDate();
+			var focusEle = that.focusEle;
+			if (!reverseDate && navPreving) date = timeline.getNextDate();
+			if (reverseDate && focusEle && !navPreving) date = timeline.getPrevDate();
 			$.each(this.events, function(index, evt) {
-				if (timeline.equalByLevel(evt[reverseDate ? 'endDate' : 'startDate'], date)) {
-					that._setFocus(navPreving ? index - 1 : index, moving);
-					return false;
-				}
-				/*var _date = timeline.getValidDate(
+				var _date = timeline.getValidDate(
 					Timeline.parseDateByLevel(
 						evt[reverseDate ? 'endDate' : 'startDate'], 'MSSECONDS'
 					)
 				);
 				var c = reverseDate ?
-									_date - date < 0 ?
-										true :
-										false :
+									focusEle ?
+										_date - date < 0 ?
+											true :
+											false :
+										_date - date <= 0 ?
+												true :
+												false :
 									_date - date >= 0 ?
 										true :
 										false;
 				if (c) {
 					that._setFocus(navPreving ? index - 1 : index, moving);
 					return false;
-				}*/
+				}
 			});
 		},
 
@@ -348,6 +365,8 @@
 				x = that.x = offset.left - offsetX  + that._baseX;
 				that._itemsContainer.css('left', x);
 				that._itemsContainerOffset = that._itemsContainer.offset();
+				// 此时显示元素
+				that.showContainer();
 				return;
 			}
 			if (!moving) {
@@ -377,21 +396,34 @@
 		}
 
 	});
-	
-	// 拓展事件相关
-	$.each(['on', 'off', 'trigger'], function(_, name) {
-		TimelineSlider.prototype[name] = function() {
-			return Timeline.prototype[name].apply(this, arguments);
-		};
-	});
+
+	function afterGetTimeline() {
+		if (!Timeline || Timeline.id !== 'Timeline') {
+			throw new Error('Timeline is error.');
+		}
+		// 拓展事件相关
+		if (TimelineSlider.prototype.on && TimelineSlider.prototype.off) {
+			return;
+		}
+		$.each(['on', 'off', 'trigger'], function(_, name) {
+			TimelineSlider.prototype[name] = function() {
+				return Timeline.prototype[name].apply(this, arguments);
+			};
+		});
+	}
 
 	// 支持MD
 	if (typeof module === 'object' && module && typeof module.exports === 'object') {
+		require('./timline');
+		afterGetTimeline();
 		module.exports = TimelineSlider;
 	} else {
 		if (typeof define === 'function' && define.amd) {
-			define([], function() { return TimelineSlider; });
+			define(['./timeline'], function() {
+				afterGetTimeline();
+				return TimelineSlider;
+			});
 		}
 	}
 
-}(window, $, Timeline));
+}(window, $));

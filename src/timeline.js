@@ -56,7 +56,10 @@
 		alwaysTrigger: false,
 
 		// 鼠标滚轮缩放
-		mouseZoom: true
+		mouseZoom: true,
+
+		// 检测resize
+		checkResize: false
 
 	};
 
@@ -1087,7 +1090,7 @@
 		_bindEvents: function() {
 			var that = this;
 
-			$(window).on('resize', $.proxy(this._onResize, this));
+			this.options.checkResize && $(window).on('resize', $.proxy(this._onResize, this));
 			
 			this._container.delegate('.tl-subitem-label', 'click', $.proxy(this._onSubitemClick, this));
 
@@ -1277,10 +1280,15 @@
 
 	});
 	
-	// 得到focusDate上个日期 下个日期
+	// 得到focusDate上个level日期 下个level日期
+	// 注意可能会是超出时间轴的最小 最大日期的
+	// 例如：当前focusDate是2014-11-1，
+	// 最大日期是2014-11-3，且当前level是月，
+	// 那么得到的naxtDate就是 2014-12-1
 	$.each(['getPrevDate', 'getNextDate'], function(_, name) {
 		Timeline.prototype[name] = function() {
 			var date = this.focusDate;
+			var reverseDate = this.options.reverseDate;
 			var k = this.options.reverseDate ? 1 : -1;
 			var d;
 			if (name !== 'getPrevDate') {
@@ -1296,7 +1304,7 @@
 			} else {
 				d = newDate(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours() + k);
 			}
-			return this.getValidDate(d);
+			return d;
 		};
 	});
 
