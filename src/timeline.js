@@ -1,5 +1,5 @@
 /**
- * Timeline 0.0.1
+ * Timeline
  * https://github.com/dolymood/Timeline
  * MIT licensed
  *

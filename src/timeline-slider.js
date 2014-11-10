@@ -1,5 +1,5 @@
 /**
- * TimelineSlider 0.0.1
+ * TimelineSlider
  * https://github.com/dolymood/Timeline
  * MIT licensed
  *
