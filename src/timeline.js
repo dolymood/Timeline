@@ -59,7 +59,10 @@
 		mouseZoom: true,
 
 		// 检测resize
-		checkResize: false
+		checkResize: false,
+
+		// 即使超出了也显示当前级别的所有日期 
+		showAllLevelDate: false
 
 	};
 
@@ -754,9 +757,12 @@
 
 			var ret = buildDE() + this._buildSubItemBody(lastDE + 's') +
 								subitemLabels;
-			tmp = newDate(tmp.getFullYear());
+			
 			if (reverseDate) {
-				var start = newDate(range.start.getFullYear());
+				var start = this.options.showAllLevelDate ?
+											newDate(range.start.getDE()) :
+											newDate(range.start.getFullYear());
+				tmp = newDate(this.options.showAllLevelDate ? tmp.getDE() + 9 : tmp.getFullYear());
 				while (tmp - start >= 0) {
 					if (tmp.getDE() < lastDE) {
 						lastDE = tmp.getDE();
@@ -767,7 +773,12 @@
 					tmp.setFullYear(tmp.getFullYear() - 1);
 				}
 			} else {
-				while (tmp - range.end <= 0) {
+				var end = this.options.showAllLevelDate ?
+										// 取得最后一年的12月31号最后
+										newDate(range.end.getDE() + 9, 11, 31, 23, 59, 59, 999) :
+										range.end;
+				tmp = newDate(this.options.showAllLevelDate ? tmp.getDE() : tmp.getFullYear());
+				while (tmp - end <= 0) {
 					if (tmp.getDE() > lastDE) {
 						lastDE = tmp.getDE();
 						ret += endDiv + endDiv + buildDE();
@@ -815,9 +826,12 @@
 
 			var ret = buildY() + this._buildSubItemBody(lastYear) +
 								subitemLabels;
-			tmp = newDate(tmp.getFullYear(), tmp.getMonth());
+			
 			if (reverseDate) {
-				var start = newDate(range.start.getFullYear(), range.start.getMonth());
+				var start = this.options.showAllLevelDate ?
+											newDate(range.start.getFullYear()) :
+											newDate(range.start.getFullYear(), range.start.getMonth());
+				tmp = newDate(tmp.getFullYear(), this.options.showAllLevelDate ? 11 : tmp.getMonth());
 				while (tmp - start >= 0) {
 					if (tmp.getFullYear() < lastYear) {
 						lastYear = tmp.getFullYear();
@@ -828,7 +842,11 @@
 					tmp.setMonth(tmp.getMonth() - 1);
 				}
 			} else {
-				while (tmp - range.end <= 0) {
+				var end = this.options.showAllLevelDate ?
+										newDate(range.end.getFullYear(), 11, 31, 23, 59, 59, 999) :
+										range.end;
+				tmp = newDate(tmp.getFullYear(), this.options.showAllLevelDate ? 0 : tmp.getMonth());
+				while (tmp - end <= 0) {
 					if (tmp.getFullYear() > lastYear) {
 						lastYear = tmp.getFullYear();
 						ret += endDiv + endDiv + buildY();
@@ -884,9 +902,13 @@
 								this._buildSubItemBody(getIn()) +
 								subitemLabels;
 			var tmpt;
-			tmp = newDate(tmp.getFullYear(), tmp.getMonth(), tmp.getDate());
+			
 			if (reverseDate) {
-				var start = newDate(range.start.getFullYear(), range.start.getMonth(), range.start.getDate());
+				var start = newDate(range.start.getFullYear(), range.start.getMonth(), this.options.showAllLevelDate ? 1 : range.start.getDate());
+				var t = parse2Date(newDate(tmp.getFullYear(), tmp.getMonth() + 1) - 1);
+				tmp = this.options.showAllLevelDate ?
+								newDate(t.getFullYear(), t.getMonth(), t.getDate()) :
+								newDate(tmp.getFullYear(), tmp.getMonth(), tmp.getDate());
 				while (tmp - start >= 0) {
 					tmpt = tmp.getFullYear();
 					if (tmpt < lastYear) {
@@ -906,7 +928,11 @@
 					tmp.setDate(tmp.getDate() - 1);
 				}
 			} else {
-				while (tmp - range.end <= 0) {
+				var end = this.options.showAllLevelDate ?
+										parse2Date(newDate(range.end.getFullYear(), range.end.getMonth() + 1) - 1) :
+										range.end;
+				tmp = newDate(tmp.getFullYear(), tmp.getMonth(), this.options.showAllLevelDate ? 1 : tmp.getDate());
+				while (tmp - end <= 0) {
 					tmpt = tmp.getFullYear();
 					if (tmpt > lastYear) {
 						lastYear = tmpt;
@@ -971,9 +997,10 @@
 								this._buildSubItemBody(getIn()) +
 								subitemLabels;
 			var tmpt;
-			tmp = newDate(tmp.getFullYear(), tmp.getMonth(), tmp.getDate(), tmp.getHours());
+			
 			if (reverseDate) {
-				var start = newDate(range.start.getFullYear(), range.start.getMonth(), range.start.getDate(), range.start.getHours());
+				var start = newDate(range.start.getFullYear(), range.start.getMonth(), range.start.getDate(), this.options.showAllLevelDate ? 0 : range.start.getHours());
+				tmp = newDate(tmp.getFullYear(), tmp.getMonth(), tmp.getDate(), this.options.showAllLevelDate ? 23 : tmp.getHours());
 				while (tmp - start >= 0) {
 					tmpt = tmp.getFullYear();
 					if (tmpt < lastYear) {
@@ -1002,7 +1029,11 @@
 					tmp.setHours(tmp.getHours() - 1);
 				}
 			} else {
-				while (tmp - range.end <= 0) {
+				var end = this.options.showAllLevelDate ?
+										newDate(range.end.getFullYear(), range.end.getMonth(), range.end.getDate(), 23, 59, 59, 999) :
+										range.end;
+				tmp = newDate(tmp.getFullYear(), tmp.getMonth(), tmp.getDate(), this.options.showAllLevelDate ? 0 : tmp.getHours());
+				while (tmp - end <= 0) {
 					tmpt = tmp.getFullYear();
 					if (tmpt > lastYear) {
 						lastYear = tmpt;
