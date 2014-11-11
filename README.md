@@ -29,7 +29,11 @@ var tl = new Timeline('#timelineID', timelineData, {
 	mouseZoom: true,
 
 	// 检测resize
-	checkResize: false
+	checkResize: false,
+
+	// 即使超出了也显示当前级别的所有日期 
+	showAllLevelDate: false
+
 });
 ```
 
