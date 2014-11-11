@@ -441,7 +441,7 @@
 			var method = SHOWLEVELS[level - 1];
 			var v = date[method]();
 			if (!this.focusEle || this.focusEle.attr('data-id') != v) {
-				this.focusEle = $('#' + id).find('.tl-subitem-label[data-id="' + v + '"]');
+				this._setFocusEle($('#' + id).find('.tl-subitem-label[data-id="' + v + '"]'));
 			}
 			
 			this.updatePos();
@@ -533,7 +533,7 @@
 						var ele = $(this);
 						if (checkIn(ele)) {
 							// 得到了
-							that.focusEle = ele;
+							that._setFocusEle(ele);
 							var date = that._getDateByEle(ele);
 							that._setFocusDate(date, true);
 							return false;
@@ -556,6 +556,16 @@
 					return false;
 				}
 			}
+		},
+
+		/**
+		 * 设置focusEle
+		 * @param {Object} ele 设置jquery封装元素
+		 */
+		_setFocusEle: function(ele) {
+			this.focusEle && this.focusEle.removeClass('tl-focus-ele');
+			this.focusEle = ele;
+			this.focusEle.addClass('tl-focus-ele');
 		},
 
 		/**
