@@ -163,11 +163,12 @@
 		_buildPanels: function() {
 			var that = this;
 			var panelDiffNum = this.options.panelDiffNum;
+			var reverseDate = this.timeline.options.reverseDate;
 			var ret = '';
 			var enddiv = '</div>';
 			var lastPanel = '';
 			var lastPid;
-			if (this.timeline.options.reverseDate) {
+			if (reverseDate) {
 				this.events.reverse();
 			}
 			$.each(this.events, function (index, evt) {
@@ -183,7 +184,8 @@
 					ret += lastPanel;
 				}
 				// 构建每一项内容
-				ret += that._buildItem(index, index - pid * panelDiffNum, that.options.buildItemContent.call(that, evt, index));
+				var oIndex = reverseDate ? that.events.length - index - 1 : index;
+				ret += that._buildItem(oIndex, index - pid * panelDiffNum, that.options.buildItemContent.call(that, evt, oIndex));
 			});
 			ret += enddiv;
 			return ret;
@@ -347,7 +349,9 @@
 		 * @return {Object}       jquery包装过元素对象
 		 */
 		_getEle: function(index) {
-			return $('#tls-panel-' + this._getPid(index)).find('.tls-item[data-index="' + index + '"]');
+			var nIndex = index;
+			if (this.timeline.options.reverseDate) nIndex = this.events.length - index - 1;
+			return $('#tls-panel-' + this._getPid(index)).find('.tls-item[data-index="' + nIndex + '"]');
 		},
 
 		/**
