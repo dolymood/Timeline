@@ -20,6 +20,9 @@
 		// 检测resize
 		checkResize: false,
 
+		// 左右切换时是否按panel切换
+		navPanel: false,
+
 		// 构建单个项内容
 		buildItemContent: function(evt, index) {
 			return evt.id;
@@ -49,6 +52,8 @@
 		this.x = 0;
 		this.curIndex = -1;
 		this.focusEle = null;
+		this.resetIndex = 0;
+		this.checkingDate = false;
 
 		var init = $.proxy(this.init, this);
 		if (timeline.inited) {
@@ -228,8 +233,18 @@
 		 * 显示隐藏navBtn
 		 */
 		_checkNav: function() {
-			this._nextNavBtn[this.events[this.curIndex + 1] ? 'show' : 'hide']();
-			this._prevNavBtn[this.events[this.curIndex - 1] ? 'show' : 'hide']();
+			var halfRange = this._getNavRange() / 2;
+			var len = this.events.length - 1;
+			this._nextNavBtn[
+				(this.curIndex < len) && (this.curIndex + halfRange < len) ?
+					'show' :
+					'hide'
+			]();
+			this._prevNavBtn[
+				(this.curIndex > 0) && (this.curIndex - halfRange > 0) ?
+					'show' :
+					'hide'
+			]();
 		},
 
 		/**
@@ -264,10 +279,21 @@
 		},
 
 		/**
+		 * 得到切换差值
+		 * @return {Number} 差值
+		 */
+		_getNavRange: function() {
+			if (this.options.navPanel) return this.options.panelDiffNum;
+			return 1;
+		},
+
+		/**
 		 * 下一个导航按钮点击处理函数
 		 */
 		_onNavNext: function() {
-			this._setFocus(this.curIndex + 1, false, true);
+			this.checkingDate = true;
+			this._setFocus(this.curIndex + this._getNavRange());
+			this.checkingDate = false;
 		},
 
 		/**
@@ -275,8 +301,18 @@
 		 */
 		_onNavPrev: function() {
 			navPreving = true;
-			this._setFocus(this.curIndex - 1, false, true);
+			this.checkingDate = true;
+			var range = this._getNavRange();
+			var panelDiffNum = this.options.panelDiffNum;
+			if (this.options.navPanel && panelDiffNum > 1) {
+				var r = (this.curIndex - this.resetIndex) % panelDiffNum;
+				if (r > 0) {
+					range = r;
+				}
+			}
+			this._setFocus(this.curIndex - range);
 			navPreving = false;
+			this.checkingDate = false;
 		},
 
 		/**
@@ -298,6 +334,7 @@
 		 * @param  {Boolean} moving 是否在mousemove中
 		 */
 		moveTo: function(date, moving) {
+			if (this.checkingDate) return;
 			var that = this;
 			var timeline = this.timeline;
 			var reverseDate = timeline.options.reverseDate;
@@ -332,15 +369,17 @@
 		 * 设置焦点相关
 		 * @param {Number}  index     当前次序
 		 * @param {Boolean} moving    是否在mousemove中
-		 * @param {Boolean} checkDate 是否需要检测日期
 		 */
-		_setFocus: function(index, moving, checkDate) {
+		_setFocus: function(index, moving) {
+			if (index < 0) index = 0;
+			if (index >= this.events.length) index = this.events.length - 1;
 			if (index === this.curIndex) return;
+			if (!this.checkingDate) this.resetIndex = index;
 			this.focusEle = this._getEle(index);
 			this.curIndex = index;
 			this._doUpdatePos(this.focusEle.offset().left + this.focusEle.outerWidth() / 2, moving);
 			this._checkNav();
-			checkDate && this._checkCurDate();
+			this.checkingDate && this._checkCurDate();
 		},
 
 		/**
@@ -367,10 +406,12 @@
 				// 初始第一次
 				offset = that._itemsContainer.offset();
 				x = that.x = offset.left - offsetX  + that._baseX;
+				that.trigger('startMoving', that);
 				that._itemsContainer.css('left', x);
 				that._itemsContainerOffset = that._itemsContainer.offset();
 				// 此时显示元素
 				that.showContainer();
+				that.trigger('finishMoving', that);
 				return;
 			}
 			if (!moving) {
@@ -385,6 +426,7 @@
 			updatePosTimeout = setTimeout(doMove, duration);
 
 			function doMove(x) {
+				that.trigger('startMoving', that);
 				offset = that._itemsContainerOffset;
 				x = that.x = offset.left - offsetX + that._baseX;
 				that._itemsContainer.animate({
@@ -394,6 +436,7 @@
 					queue : false,
 					complete: function() {
 						that._itemsContainerOffset = that._itemsContainer.offset();
+						that.trigger('finishMoving', that);
 					}
 				});
 			}

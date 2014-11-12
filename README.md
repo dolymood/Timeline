@@ -51,6 +51,9 @@ var tls = new TimelineSlider('#timelineSlideID', tl, {
 	// 检测resize
 	checkResize: false,
 
+	// 左右切换时是否按panel切换
+	navPanel: false,
+
 	// 构建单个项内容
 	buildItemContent: function(evt, index) {
 		return '<img src="//s4.kuaipan.cn/i/4/135.png"><span>' + evt.id + '</span>';
