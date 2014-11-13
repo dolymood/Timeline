@@ -1,6 +1,6 @@
 .tl-container {position:relative;height:40px;overflow:hidden;border:2px solid #000;background:#726d62;}
 
-.tl-cursor {z-index:10;left:50%;top:0;position:absolute;width:16px;height:7px;margin-left:-8px;background:url(//s4.kuaipan.cn/i/2/135.gif) no-repeat center;}
+.tl-cursor {z-index:10;left:50%;top:0;position:absolute;width:16px;height:7px;margin-left:-8px;background:url(http://s4.kuaipan.cn/i/2/135.gif) no-repeat center;}
 
 .tl-body {position:absolute;width:100000px;-moz-user-select:-moz-none;-khtml-user-select:none;-webkit-user-select:none;-ms-user-select:none;user-select:none;}
 
