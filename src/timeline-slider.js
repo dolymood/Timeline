@@ -339,8 +339,8 @@
 			var timeline = this.timeline;
 			var reverseDate = timeline.options.reverseDate;
 			var focusEle = that.focusEle;
-			if (!reverseDate && navPreving) date = timeline.getNextDate();
-			if (reverseDate && focusEle && !navPreving) date = timeline.getPrevDate();
+			if (!reverseDate && navPreving) date = timeline.getNextDate(date);
+			if (reverseDate && focusEle && !navPreving) date = timeline.getPrevDate(date);
 			$.each(this.events, function(index, evt) {
 				var _date = timeline.getValidDate(
 					Timeline.parseDateByLevel(
@@ -470,6 +470,8 @@
 				afterGetTimeline();
 				return TimelineSlider;
 			});
+		} else {
+			afterGetTimeline();
 		}
 	}
 

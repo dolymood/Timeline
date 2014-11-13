@@ -259,6 +259,25 @@
 		},
 
 		/**
+		 * 日期是否是有效日期
+		 * @param  {Date|String} date 日期
+		 * @return {Boolean}      		是否有效
+		 */
+		isValidDate: function(date) {
+			if (!date) return false;
+			if (typeof date == 'string') {
+				date = parse2Date(date);
+			}
+			var range = this.getRange();
+			var start = range.start;
+			var end = range.end;
+			if (start - date > 0 || end - date < 0) {
+				return false;
+			}
+			return true;
+		},
+
+		/**
 		 * 刷新
 		 */
 		refresh: function() {
@@ -382,6 +401,14 @@
 		},
 
 		/**
+		 * 得到缩放等级zoomLevel
+		 * @return {Number} 处在的等级
+		 */
+		getZoomLevel: function() {
+			return this.zoomLevel;
+		},
+
+		/**
 		 * 得到日期level
 		 * @return {String} 日期level
 		 */
@@ -460,21 +487,63 @@
 			if (this.inited && this.focusDate && equalDate(this.focusDate, date)) {
 				return;
 			}
+			var trigger = true;
+			var focusDate = this.focusDate;
+			var triggerDate;
 			if (noref) {
-				this.focusDate = this.getValidDate(date);
+				date = this.getValidDate(date);
+				triggerDate = date;
+				checkDoTrigger(date);
+				this.focusDate = date;
 			} else {
+				triggerDate = date;
+				checkDoTrigger(date);
 				this.focusDate = date;
 				this._refresh();
 			}
-			if (!this.options.alwaysTrigger && !this.checkDateOK(parseDateByLevel(this.focusDate, this.getDateLevel()))) {
-				return;
-			}
+
+			if (!trigger) return;
 			if (this.inited) {
-				this.EVENT.trigger('dateChange', [this.focusDate, noref]);
+				this.EVENT.trigger('dateChange', [triggerDate, noref]);
 			} else {
 				setTimeout(function() {
-					that.EVENT.trigger('dateChange', [that.focusDate, noref]);
+					that.EVENT.trigger('dateChange', [triggerDate, noref]);
 				});
+			}
+			function checkDoTrigger(_date) {
+				if (!that.options.alwaysTrigger && that.inited) {
+					var level = that.getDateLevel();
+					var finded = false;
+					var range = that.getRange();
+					// 是否是往小日期方向去的
+					var toSmaller = _date - focusDate < 0;
+					// 是否应该比较下一个日期
+					var shouldCheckNext = toSmaller ^ that.options.reverseDate;
+					var cDate = range[toSmaller ? 'end' : 'start'];
+					var tmp = _date;
+					do {
+						if (tmp === _date) tmp = parseDateByLevel(_date, level);
+						_date = tmp;
+						if (that.checkDateOK(_date)) {
+							finded = true;
+						}
+					} while (!finded && checkOK())
+
+					if (finded && !equalDate(_date, focusDate)) {
+						triggerDate = _date;
+						trigger = true;
+					} else {
+						trigger = false;
+					}
+				}
+				function checkOK() {
+					if (shouldCheckNext) {
+						tmp = that.getNextDate(_date);
+					} else {
+						tmp = that.getPrevDate(_date);
+					}
+					return toSmaller ? (tmp - cDate <= 0) : (tmp - cDate >= 0);
+				}
 			}
 		},
 
@@ -569,6 +638,8 @@
 			this.focusEle && this.focusEle.removeClass('tl-focus-ele');
 			this.focusEle = ele;
 			this.focusEle.addClass('tl-focus-ele');
+			var w = ele.outerWidth();
+			this._cursor.width(w).css('margin-left', -w / 2);
 		},
 
 		/**
@@ -652,7 +723,7 @@
 		 * 创建timeline的cursor
 		 */
 		_buildCursor: function() {
-			this._cursor = $('<div class="tl-cursor"></div>');
+			this._cursor = $('<div class="tl-cursor"><i></i></div>');
 		},
 
 		/**
@@ -690,6 +761,14 @@
 			this.hZoomUnit = (ret.DAY - ret.HOUR) / 4;
 
 			return ret;
+		},
+
+		/**
+		 * 得到zoomTree
+		 * @return {Object} 不同等级的zoomTree
+		 */
+		getZoomTree: function() {
+			return this._initZoomTree();
 		},
 
 		/**
@@ -1321,14 +1400,15 @@
 
 	});
 	
-	// 得到focusDate上个level日期 下个level日期
+	// 得到focusDate或者指定日期
+	// 上个level日期 下个level日期
 	// 注意可能会是超出时间轴的最小 最大日期的
 	// 例如：当前focusDate是2014-11-1，
 	// 最大日期是2014-11-3，且当前level是月，
 	// 那么得到的naxtDate就是 2014-12-1
 	$.each(['getPrevDate', 'getNextDate'], function(_, name) {
-		Timeline.prototype[name] = function() {
-			var date = this.focusDate;
+		Timeline.prototype[name] = function(date) {
+			if (!date) date = this.focusDate;
 			var reverseDate = this.options.reverseDate;
 			var k = this.options.reverseDate ? 1 : -1;
 			var d;
