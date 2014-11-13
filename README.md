@@ -22,9 +22,6 @@ var tl = new Timeline('#timelineID', timelineData, {
 	// 是否是由最近时间开始
 	reverseDate: false,
 
-	// 当不是有效日期点时 是否触发datechange事件
-	alwaysTrigger: false,
-
 	// 鼠标滚轮缩放
 	mouseZoom: true,
 

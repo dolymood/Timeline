@@ -194,13 +194,16 @@
 	var z = $('#zoomI');
 	var tl = new Timeline('#timelineID', timelineData, {
 		// reverseDate: true,
+		checkResize: true,
+		showAllLevelDate: true,
 		zoom: z.val()
 	});
 
 	var tls = new TimelineSlider('#timelineSlideID', tl, {
-
+		checkResize: true,
+		navPanel: true,
 		buildItemContent: function(evt, index) {
-			return '<img src="//s4.kuaipan.cn/i/4/135.png"><span>' + evt.id + '</span>';
+			return '<img src="http://s4.kuaipan.cn/i/4/135.png"><span>' + evt.id + '</span>';
 		}
 
 	});
@@ -230,7 +233,7 @@
 		z.val(zoom);
 	});
 	var focusDate = $('#focusDate');
-	tl.on('dateChange', function(e, date) {
+	tl.on('focusDateChange', function(e, date) {
 		focusDate.val(date.toLocaleString());
 	});
 	</script>

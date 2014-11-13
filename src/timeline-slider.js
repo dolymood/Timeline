@@ -268,7 +268,7 @@
 			!this.options.showAllEvents && this.timeline.on('_refresh', function(e) {
 				that.inited && that.refresh();
 			});
-			this.timeline.on('dateChange', function(e, date, moving) {
+			this.timeline.on('focusValidDateChange', function(e, date, moving) {
 				that.moveTo(date, moving);
 			});
 

@@ -52,9 +52,6 @@
 		// 是否是由最近时间开始
 		reverseDate: false,
 
-		// 当不是有效日期点时 是否触发datechange事件
-		alwaysTrigger: false,
-
 		// 鼠标滚轮缩放
 		mouseZoom: true,
 
@@ -138,6 +135,8 @@
 		this.endEventsIndex = 0;
 
 		this.focusDate = this.focusEle = null;
+		// 当前的有效日期
+		this.focusValidDate = null;
 
 		this.showLevel = SHOWLEVELS.DAY;
 		this.zoomLevel = ZOOMLEVELNUM;
@@ -487,36 +486,47 @@
 			if (this.inited && this.focusDate && equalDate(this.focusDate, date)) {
 				return;
 			}
-			var trigger = true;
-			var focusDate = this.focusDate;
-			var triggerDate;
+			var triggerValid = true;
+			// 触发的有效日期
+			var triggerValidDate;
 			if (noref) {
 				date = this.getValidDate(date);
-				triggerDate = date;
+				triggerValidDate = date;
 				checkDoTrigger(date);
 				this.focusDate = date;
 			} else {
-				triggerDate = date;
+				triggerValidDate = date;
 				checkDoTrigger(date);
 				this.focusDate = date;
 				this._refresh();
 			}
 
-			if (!trigger) return;
-			if (this.inited) {
-				this.EVENT.trigger('dateChange', [triggerDate, noref]);
-			} else {
-				setTimeout(function() {
-					that.EVENT.trigger('dateChange', [triggerDate, noref]);
-				});
+			triggerEvent('focusDateChange', [this.focusDate, noref]);
+
+			if (!triggerValid) return;
+			this.focusValidDate = triggerValidDate;
+			triggerEvent('focusValidDateChange', [triggerValidDate, noref]);
+			
+			// 触发事件
+			function triggerEvent(eventName, args) {
+				if (that.inited) {
+					that.EVENT.trigger(eventName, args);
+				} else {
+					setTimeout(function() {
+						that.EVENT.trigger(eventName, args);
+					});
+				}
 			}
+
+			// 检验并更新triggerValidDate
 			function checkDoTrigger(_date) {
-				if (!that.options.alwaysTrigger && that.inited) {
+				if (that.inited) {
+					var focusValidDate = that.focusValidDate;
 					var level = that.getDateLevel();
 					var finded = false;
 					var range = that.getRange();
 					// 是否是往小日期方向去的
-					var toSmaller = _date - focusDate < 0;
+					var toSmaller = _date - focusValidDate < 0;
 					// 是否应该比较下一个日期
 					var shouldCheckNext = toSmaller ^ that.options.reverseDate;
 					var cDate = range[toSmaller ? 'end' : 'start'];
@@ -529,13 +539,14 @@
 						}
 					} while (!finded && checkOK())
 
-					if (finded && !equalDate(_date, focusDate)) {
-						triggerDate = _date;
-						trigger = true;
+					if (finded && !equalDate(_date, focusValidDate)) {
+						triggerValidDate = _date;
+						triggerValid = true;
 					} else {
-						trigger = false;
+						triggerValid = false;
 					}
 				}
+				// 是否超出检测范围
 				function checkOK() {
 					if (shouldCheckNext) {
 						tmp = that.getNextDate(_date);
@@ -1465,7 +1476,7 @@
 		var retDate = new Date();
 		// 重置时间
 		for (var i = 0; i < 7; i++) {
-			if (!arguments[i] || (arguments[i] = arguments[i] - 0) < 0) {
+			if (!arguments[i]) {
 				arguments[i] = 0;
 			}
 		}

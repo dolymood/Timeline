@@ -2,9 +2,9 @@
 
 .tls-body {position:relative;overflow:hidden;height:100%;box-shadow:0 0 5px rgba(0, 0, 0, .5)}
 
-.tls-nav-next, .tls-nav-prev {z-index:5;top:0;position:absolute;width:50px;height:100%;cursor:pointer;background:url(//s4.kuaipan.cn/i/4/005.png) no-repeat center;}
+.tls-nav-next, .tls-nav-prev {z-index:5;top:0;position:absolute;width:50px;height:100%;cursor:pointer;background:url(http://s4.kuaipan.cn/i/4/005.png) no-repeat center;}
 .tls-nav-next {right:0;}
-.tls-nav-prev {left:0;background-image:url(//s4.kuaipan.cn/i/4/004.png);}
+.tls-nav-prev {left:0;background-image:url(http://s4.kuaipan.cn/i/4/004.png);}
 
 .tls-items-container {position:absolute;top:0;height:100%;}
 
