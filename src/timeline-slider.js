@@ -272,10 +272,10 @@
 				that.moveTo(date, moving);
 			});
 
-			this.options.checkResize && $(window).on('resize', $.proxy(this._onResize, this));
+			this.options.checkResize && $(window).on('resize', (this._onResizeHandler = $.proxy(this._onResize, this)));
 
-			this._container.delegate('.tls-nav-next', 'click', $.proxy(this._onNavNext, this));
-			this._container.delegate('.tls-nav-prev', 'click', $.proxy(this._onNavPrev, this));
+			this._container.delegate('.tls-nav-next', 'click', (this._onNavNextHandler = $.proxy(this._onNavNext, this)));
+			this._container.delegate('.tls-nav-prev', 'click', (this._onNavPrevHandler = $.proxy(this._onNavPrev, this)));
 		},
 
 		/**
@@ -440,6 +440,31 @@
 					}
 				});
 			}
+		},
+
+		/**
+		 * 销毁
+		 */
+		destroy: function() {
+			this.off('startMoving');
+			this.off('finishMoving');
+			this._onResizeHandler && $(window).off('resize', this._onResizeHandler);
+			this._container.off('click', this._onNavNextHandler);
+			this._container.off('click', this._onNavPrevHandler);
+			this._onResizeHandler = null;
+			this._onNavNextHandler = null;
+			this._onNavPrevHandler = null;
+			this._container.remove();
+			
+			this._container = null;
+			this._body = null;
+			this._itemsContainer = null;
+			this.ele = null;
+			this.timeline = null;
+			this.options = null;
+			this.EVENT = null;
+			this.inited = false;
+			this.focusEle = null;
 		}
 
 	});

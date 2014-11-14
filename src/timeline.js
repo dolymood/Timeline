@@ -1219,15 +1219,14 @@
 		 * 绑定需要的事件
 		 */
 		_bindEvents: function() {
-			var that = this;
 
-			this.options.checkResize && $(window).on('resize', $.proxy(this._onResize, this));
+			this.options.checkResize && $(window).on('resize', (this._onResizeHandler = $.proxy(this._onResize, this)));
 			
-			this._container.delegate('.tl-subitem-label', 'click', $.proxy(this._onSubitemClick, this));
+			this._container.delegate('.tl-subitem-label', 'click', (this._onSubitemClickHandler = $.proxy(this._onSubitemClick, this)));
 
-			this._container.on('mousedown', $.proxy(this._onMousedown, this));
+			this._container.on('mousedown', (this._onMousedownHandler = $.proxy(this._onMousedown, this)));
 
-			this.options.mouseZoom && this._container.on('mousewheel', $.proxy(this._onMousewheel, this));
+			this.options.mouseZoom && this._container.on('mousewheel', (this._onMousewheelHandler = $.proxy(this._onMousewheel, this)));
 		},
 
 		/**
@@ -1406,8 +1405,45 @@
 				parse2Date(events[events.length - 1].endDate || events[events.length - 1].startDate)
 			);
 			return this._realRange;
-		}
+		},
 
+		/**
+		 * 销毁
+		 */
+		destroy: function() {
+			var that = this;
+			
+			$.each(['sourceLoaded', 'sourceFailed', 'inited', 'refresh', '_refresh', 'focusDateChange', 'focusValidDateChange'], function(_, name) {
+				that.EVENT.off(name);
+			});
+
+			this._onResizeHandler && $(window).off('resize', this._onResizeHandler);
+			this._container.off('click', this._onSubitemClickHandler);
+			this._container.off('mousedown', this._onMousedownHandler);
+			this._onMousewheelHandler && this._container.off('mousewheel', this._onMousewheelHandler);
+			this._onResizeHandler = null;
+			this._onSubitemClickHandler = null;
+			this._onMousedownHandler = null;
+			this._onMousewheelHandler = null;
+			
+			this._container.remove();
+
+			this.ele = null;
+			this.EVENT = null;
+			this._body = null;
+			this.source = null;
+			this._cursor = null;
+			this.options = null;
+			this.focusEle = null;
+			this._zoomTree = null;
+			this.focusDate = null;
+			this._container = null;
+			this._realRange = null;
+			this._rangeDiff = null;
+			this.sourceData = null;
+			this._initFocusDate = null;
+			this.focusValidDate = null;
+		}
 
 	});
 	
