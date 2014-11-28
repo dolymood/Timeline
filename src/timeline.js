@@ -25,7 +25,18 @@
 	// 得到十年为单位值
 	Date.prototype.getDE = function() {
 		return Math.floor(this.getFullYear() / 10) * 10;
-	}
+	};
+	// 设置十年为单位值
+	// setDe(2010)
+	Date.prototype.setDE = function(de) {
+		var year = this.getFullYear();
+		var _de = this.getDE();
+		var diff = year - _de;
+		de = de - 0;
+		this.setFullYear(de + diff);
+		return this.getTime();
+	};
+
 
 	// 统一位数
 	function pad(val, len, cut) {
@@ -280,9 +291,10 @@
 		 * 刷新
 		 */
 		refresh: function() {
+			var lastShowLevel = this.showLevel;
 			this._comLevel();
 			this._comRangeDiff();
-			this._refresh();
+			this._refresh(lastShowLevel != this.showLevel ? lastShowLevel : undefined);
 			this.moveTo(this.focusDate);
 			this.EVENT.trigger('refresh', this);
 		},
@@ -316,13 +328,14 @@
 
 		/**
 		 * 内部更新片段
+		 * @param  {Number} lastShowLevel zoom改变更新level时之前level的值
 		 */
-		_refresh: function() {
+		_refresh: function(lastShowLevel) {
 			var that = this, range;
 
 			range = this._getTempRange();
 
-			this._comEventsEdge(range);
+			this._comEventsEdge(range, lastShowLevel);
 
 			// todo: 判断下条件 优化
 			this._body.html(this._buildItems(range)).prepend(this._cursor);
@@ -342,13 +355,36 @@
 
 		/**
 		 * 更新有效日期MAP对象
-		 * @param  {[type]} start [description]
-		 * @param  {[type]} end   [description]
+		 * @param  {Date}   start 开始日期
+		 * @param  {Date}   end   结束日期
+		 * @param  {Number} i     在events中次序
 		 */
-		_updateEventsOKMap: function(start, end) {
+		_updateEventsOKMap: function(start, end, i) {
 			if (!EVENTSOKMAP) EVENTSOKMAP = {};
-			EVENTSOKMAP[start.getTime()] = true;
-			EVENTSOKMAP[end.getTime()] = true;
+			// 在start和end之间也属于ok的
+			var tmp = cloneDate(start);
+			var showLevel = this.showLevel;
+			var dateLevel = this.getDateLevel();
+			// 差值
+			var diff = showLevel > 4 ? 10 : 1;
+
+			var getMethod = SHOWLEVELS[showLevel];
+			var setMethod = getMethod.replace('get', 'set');
+
+			var reverseDate = this.options.reverseDate;
+			
+			while (tmp - end < 0) {
+				setMap(tmp);
+				tmp[setMethod](tmp[getMethod]() + diff);
+				tmp = parseDateByLevel(tmp, dateLevel);
+			}
+			setMap(end);
+
+			function setMap(date) {
+				if (reverseDate || EVENTSOKMAP[date.getTime()] == undefined) {
+					EVENTSOKMAP[date.getTime()] = i;
+				}
+			}
 		},
 
 		/**
@@ -357,14 +393,17 @@
 		 * @return {Boolean}      是否是有效日期点
 		 */
 		checkDateOK: function(date) {
-			return !!EVENTSOKMAP[date.getTime()];	
+			var index = EVENTSOKMAP[date.getTime()];
+			if (index === 0) return true;
+			return !!index;
 		},
 
 		/**
 		 * 计算开始和结束位置
-		 * @param  {Object} range 当前范围
+		 * @param  {Object}  range 当前范围
+		 * @param  {Number}  lastShowLevel zoom改变更新level时之前level的值
 		 */
-		_comEventsEdge: function(range) {
+		_comEventsEdge: function(range, lastShowLevel) {
 			var events = this.sourceData.events;
 			var level = this.getDateLevel();
 			var setStart = false;
@@ -372,14 +411,47 @@
 			var start;
 			var end;
 			var tmp;
+			// 当zoom更新的时候 focusValidDate的值也应该更新
+			var focusValidIndex = lastShowLevel &&
+				lastShowLevel > this.showLevel && EVENTSOKMAP &&
+				EVENTSOKMAP[this.focusValidDate.getTime()];
+			var reverseDate = this.options.reverseDate;
+			var nV;
+			var showLevel;
 			EVENTSOKMAP = null;
 			for (var i = 0, len = events.length; i < len; i++) {
 				tmp = events[i];
 				start = parseDateByLevel(tmp.startDate, level);
 				end = parseDateByLevel(tmp.endDate, level);
-				this._updateEventsOKMap(start, end);
+				// 缓存住 避免二次计算
+				tmp._tl_start = start;
+				tmp._tl_end = end;
+				this._updateEventsOKMap(start, end, i);
 				start = this.getValidDate(start);
 				end = this.getValidDate(end);
+				// 缓存住 避免二次计算
+				tmp._tl_valid_start = start;
+				tmp._tl_valid_end = end;
+
+				if (i === focusValidIndex) {
+					showLevel = this.showLevel;
+					this.showLevel = lastShowLevel;
+					// 取得lastShowLevel下的focusValidDate在当前日期level下的值
+					nV = parseDateByLevel(this[reverseDate ? 'getPrevDate' : 'getNextDate'](this.focusValidDate).getTime() - 1, level);
+					this.showLevel = showLevel;
+					if (reverseDate) {
+						if (nV - end > 0) nV = end;
+					} else {
+						if (nV - start > 0) nV = start;
+					}
+					// 更新focusValidDate的值
+					if (equalDate(this.focusDate, this.focusValidDate)) {
+						this.focusValidDate = this.focusDate = nV;
+					} else {
+						this.focusValidDate = nV;
+					}
+				}
+
 				if (!setStart && start - range.start >= 0) {
 					// 左边界
 					this.startEventsIndex = i;
@@ -430,8 +502,9 @@
 		 * @return {Boolean}           是否相等
 		 */
 		equalByLevel: function(date, focusDate) {
-			var _date = this.getValidDate(parseDateByLevel(date, this.getDateLevel()));
-			focusDate = this.getValidDate(parseDateByLevel(focusDate || this.focusDate, this.getDateLevel()));
+			var dateLevel = this.getDateLevel();
+			var _date = this.getValidDate(parseDateByLevel(date, dateLevel));
+			focusDate = this.getValidDate(parseDateByLevel(focusDate || this.focusDate, dateLevel));
 			return equalDate(_date, focusDate);
 		},
 
@@ -616,9 +689,9 @@
 						var ele = $(this);
 						if (checkIn(ele)) {
 							// 得到了
-							that._setFocusEle(ele);
 							var date = that._getDateByEle(ele);
 							that._setFocusDate(date, true);
+							that._setFocusEle(ele);
 							return false;
 						}
 					});
@@ -649,6 +722,18 @@
 			this.focusEle && this.focusEle.removeClass('tl-focus-ele');
 			this.focusEle = ele;
 			this.focusEle.addClass('tl-focus-ele');
+			/*var d, i, evt, startDate, endDate;
+			if (ele.hasClass('tl-subitem-label-ok')) {
+				// 是有效元素 意味着有有效日期
+				d = parseDateByLevel(this.focusDate, this.getDateLevel());
+				// 在events中的次序
+				i = EVENTSOKMAP[d];
+				// event
+				evt = this.events[i];
+				startDate = evt._tl_start;
+				endDate = evt._tl_end;
+				// TODO: 增加 focusEle的左标以及右标宽度并定位
+			}*/
 			var w = ele.outerWidth();
 			this._cursor.width(w).css('margin-left', -w / 2);
 		},
@@ -724,7 +809,6 @@
 
 		/**
 		 * 创建timeline的container
-		 * @return {[type]} [description]
 		 */
 		_buildContainer: function() {
 			this._container = $('<div class="tl-container"></div>');
@@ -1450,9 +1534,9 @@
 	// 得到focusDate或者指定日期
 	// 上个level日期 下个level日期
 	// 注意可能会是超出时间轴的最小 最大日期的
-	// 例如：当前focusDate是2014-11-1，
+	// 例如：当前date是2014-11-1，
 	// 最大日期是2014-11-3，且当前level是月，
-	// 那么得到的naxtDate就是 2014-12-1
+	// 那么得到的nextDate就是 2014-12-1
 	$.each(['getPrevDate', 'getNextDate'], function(_, name) {
 		Timeline.prototype[name] = function(date) {
 			if (!date) date = this.focusDate;
@@ -1510,15 +1594,15 @@
 	 */
 	function newDate(y) {
 		var retDate = new Date();
+		var day = arguments[2];
 		// 重置时间
 		for (var i = 0; i < 7; i++) {
-			if (!arguments[i]) {
-				arguments[i] = 0;
+			if (arguments[i] == undefined) {
+				arguments[i] = i === 2 ? 1 : 0;
 			}
 		}
 		if (y) retDate.setFullYear(y);
 		retDate.setMonth(arguments[1]);
-		if (!arguments[2]) arguments[2] = 1;
 		retDate.setDate(arguments[2]);
 		retDate.setHours(arguments[3]);
 		retDate.setMinutes(arguments[4]);
@@ -1538,7 +1622,9 @@
 		if (!date.getTime) {
 			date = parse2Date(date);
 		}
-		var r = [date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()];
+		var r = [date.getFullYear(), date.getMonth(), date.getDate(),
+			date.getHours(), date.getMinutes(), date.getSeconds(),
+			date.getMilliseconds()];
 		var args = r.slice(0, DATELEVEL[level] || 4);
 		return newDate.apply(this, args);
 	}

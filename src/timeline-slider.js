@@ -176,6 +176,7 @@
 			if (reverseDate) {
 				this.events.reverse();
 			}
+			var len = this.events.length;
 			$.each(this.events, function (index, evt) {
 				var pid = that._getPid(index, panelDiffNum);
 				if (pid !== lastPid) {
@@ -189,7 +190,7 @@
 					ret += lastPanel;
 				}
 				// 构建每一项内容
-				var oIndex = reverseDate ? that.events.length - index - 1 : index;
+				var oIndex = reverseDate ? len - index - 1 : index;
 				ret += that._buildItem(oIndex, index - pid * panelDiffNum, that.options.buildItemContent.call(that, evt, oIndex));
 			});
 			ret += enddiv;
@@ -339,23 +340,29 @@
 			var timeline = this.timeline;
 			var reverseDate = timeline.options.reverseDate;
 			var focusEle = that.focusEle;
+			var oriDate = date;
 			if (!reverseDate && navPreving) date = timeline.getNextDate(date);
 			if (reverseDate && focusEle && !navPreving) date = timeline.getPrevDate(date);
 			$.each(this.events, function(index, evt) {
 				var _date = timeline.getValidDate(
 					Timeline.parseDateByLevel(
-						evt[reverseDate ? 'endDate' : 'startDate'], 'MSSECONDS'
+						evt['endDate'], 'MSSECONDS'
+					)
+				);
+				var _date2 = timeline.getValidDate(
+					Timeline.parseDateByLevel(
+						evt['startDate'], 'MSSECONDS'
 					)
 				);
 				var c = reverseDate ?
 									focusEle ?
-										_date - date < 0 ?
+										(_date - date < 0) || (_date2 - date < 0) ?
 											true :
 											false :
-										_date - date <= 0 ?
+										(_date - date <= 0) || (_date2 - date <= 0) ?
 												true :
 												false :
-									_date - date >= 0 ?
+									(_date - date >= 0) || (_date2 - date >= 0) ?
 										true :
 										false;
 				if (c) {
