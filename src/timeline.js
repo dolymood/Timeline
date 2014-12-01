@@ -412,8 +412,12 @@
 			var end;
 			var tmp;
 			// 当zoom更新的时候 focusValidDate的值也应该更新
+			// 如果指定的是focusDate是特定的日期的话
+			// 在 EVENTSOKMAP 中是不存在的
+			// 因为在 EVENTSOKMAP 中存储的 key 都是
+			// 当前level下的日期
 			var focusValidIndex = lastShowLevel &&
-				lastShowLevel > this.showLevel && EVENTSOKMAP &&
+				lastShowLevel != this.showLevel && EVENTSOKMAP &&
 				EVENTSOKMAP[this.focusValidDate.getTime()];
 			var reverseDate = this.options.reverseDate;
 			var nV;
@@ -698,8 +702,6 @@
 					return false;
 				}
 			});
-
-			
 
 			function checkIn(ele) {
 				var eWidth = ele.outerWidth();
