@@ -1382,7 +1382,7 @@
 			doc.on('mouseup', mouseup);
 
 			function mousemove(e) {
-				if (!downed) return;
+				if (!downed || e.pageX === startX) return;
 				e.preventDefault();
 				moved = true;
 				doMove(e.pageX);
