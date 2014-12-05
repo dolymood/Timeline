@@ -266,7 +266,9 @@
 		 */
 		_bindEvents: function() {
 			var that = this;
-			!this.options.showAllEvents && this.timeline.on('_refresh', function(e) {
+			var evtName = 'refresh';
+			if (!this.options.showAllEvents) evtName = '_refresh';
+			this.timeline.on(evtName, function(e) {
 				that.inited && that.refresh();
 			});
 			this.timeline.on('focusValidDateChange', function(e, date, moving) {

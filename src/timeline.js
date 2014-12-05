@@ -294,7 +294,7 @@
 			var lastShowLevel = this.showLevel;
 			this._comLevel();
 			this._comRangeDiff();
-			this._refresh(lastShowLevel != this.showLevel ? lastShowLevel : undefined);
+			this._refresh(lastShowLevel != this.showLevel ? lastShowLevel : undefined, true);
 			this.moveTo(this.focusDate);
 			this.EVENT.trigger('refresh', this);
 		},
@@ -328,12 +328,13 @@
 
 		/**
 		 * 内部更新片段
-		 * @param  {Number} lastShowLevel zoom改变更新level时之前level的值
+		 * @param  {Number}  lastShowLevel zoom改变更新level时之前level的值
+		 * @param  {Boolean} hard          是否强制更新range
 		 */
-		_refresh: function(lastShowLevel) {
+		_refresh: function(lastShowLevel, hard) {
 			var that = this, range;
 
-			range = this._getTempRange();
+			range = this._getTempRange(hard);
 
 			this._comEventsEdge(range, lastShowLevel);
 
@@ -516,10 +517,11 @@
 
 		/**
 		 * 得到当前显示的日期范围
-		 * @return {Object} 日期范围
+		 * @param  {Boolean} 是否强制得到range
+		 * @return {Object}  日期范围
 		 */
-		_getTempRange: function() {
-			var realRange = this.getRange();
+		_getTempRange: function(hard) {
+			var realRange = this.getRange(hard);
 			var focusTime = this.focusDate.getTime();
 
 			var startDate = cloneDate(focusTime - this._rangeDiff);
