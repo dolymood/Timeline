@@ -239,6 +239,7 @@
 			this.refresh();
 
 			this._bindEvents();
+
 		},
 
 
@@ -339,6 +340,7 @@
 			this._comEventsEdge(range, lastShowLevel);
 
 			// todo: 判断下条件 优化
+			this._cursor = this._cursor.clone();
 			this._body.html(this._buildItems(range)).prepend(this._cursor);
 
 			this._itemsWidth = 0;
