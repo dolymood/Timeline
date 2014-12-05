@@ -124,8 +124,6 @@
 
 	var ZOOMLEVELNUM = 4;
 
-	var EVENTSOKMAP = null;
-
 	/**
 	 * 横向时间轴
 	 * @param {String|Object} ele    元素选择器或者元素或者jquery封装元素
@@ -155,6 +153,8 @@
 		this.yZoomUnit = this.mZoomUnit =
 		this.dZoomUnit = this.hZoomUnit =
 		this.zoomUnit = 1;
+
+		this.EVENTSOKMAP = null;
 
 		this.inited = false;
 
@@ -239,6 +239,7 @@
 			this.refresh();
 
 			this._bindEvents();
+
 		},
 
 
@@ -294,7 +295,7 @@
 			var lastShowLevel = this.showLevel;
 			this._comLevel();
 			this._comRangeDiff();
-			this._refresh(lastShowLevel != this.showLevel ? lastShowLevel : undefined);
+			this._refresh(lastShowLevel != this.showLevel ? lastShowLevel : undefined, true);
 			this.moveTo(this.focusDate);
 			this.EVENT.trigger('refresh', this);
 		},
@@ -328,16 +329,18 @@
 
 		/**
 		 * 内部更新片段
-		 * @param  {Number} lastShowLevel zoom改变更新level时之前level的值
+		 * @param  {Number}  lastShowLevel zoom改变更新level时之前level的值
+		 * @param  {Boolean} hard          是否强制更新range
 		 */
-		_refresh: function(lastShowLevel) {
+		_refresh: function(lastShowLevel, hard) {
 			var that = this, range;
 
-			range = this._getTempRange();
+			range = this._getTempRange(hard);
 
 			this._comEventsEdge(range, lastShowLevel);
 
 			// todo: 判断下条件 优化
+			this._cursor = this._cursor.clone();
 			this._body.html(this._buildItems(range)).prepend(this._cursor);
 
 			this._itemsWidth = 0;
@@ -360,7 +363,8 @@
 		 * @param  {Number} i     在events中次序
 		 */
 		_updateEventsOKMap: function(start, end, i) {
-			if (!EVENTSOKMAP) EVENTSOKMAP = {};
+			var EVENTSOKMAP = this.EVENTSOKMAP;
+			if (!EVENTSOKMAP) this.EVENTSOKMAP = EVENTSOKMAP = {};
 			// 在start和end之间也属于ok的
 			var tmp = cloneDate(start);
 			var showLevel = this.showLevel;
@@ -393,7 +397,7 @@
 		 * @return {Boolean}      是否是有效日期点
 		 */
 		checkDateOK: function(date) {
-			var index = EVENTSOKMAP[date.getTime()];
+			var index = this.EVENTSOKMAP[date.getTime()];
 			if (index === 0) return true;
 			return !!index;
 		},
@@ -406,6 +410,7 @@
 		_comEventsEdge: function(range, lastShowLevel) {
 			var events = this.sourceData.events;
 			var level = this.getDateLevel();
+			var EVENTSOKMAP = this.EVENTSOKMAP;
 			var setStart = false;
 			var setEnd = false;
 			var start;
@@ -422,7 +427,7 @@
 			var reverseDate = this.options.reverseDate;
 			var nV;
 			var showLevel;
-			EVENTSOKMAP = null;
+			this.EVENTSOKMAP = null;
 			for (var i = 0, len = events.length; i < len; i++) {
 				tmp = events[i];
 				start = parseDateByLevel(tmp.startDate, level);
@@ -514,10 +519,11 @@
 
 		/**
 		 * 得到当前显示的日期范围
-		 * @return {Object} 日期范围
+		 * @param  {Boolean} 是否强制得到range
+		 * @return {Object}  日期范围
 		 */
-		_getTempRange: function() {
-			var realRange = this.getRange();
+		_getTempRange: function(hard) {
+			var realRange = this.getRange(hard);
 			var focusTime = this.focusDate.getTime();
 
 			var startDate = cloneDate(focusTime - this._rangeDiff);
@@ -1527,6 +1533,7 @@
 			this._realRange = null;
 			this._rangeDiff = null;
 			this.sourceData = null;
+			this.EVENTSOKMAP = null;
 			this._initFocusDate = null;
 			this.focusValidDate = null;
 		}
